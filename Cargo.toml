@@ -6,6 +6,8 @@ edition = "2018"
 
 keywords= ["reed-solomon", "erasure"]
 
+readme= "README.md"
+
 license = "MIT"
 
 [dependencies]
