@@ -3,36 +3,81 @@
 // Implementation of GF(2^8): the finite field with 2^8 elements.
 include!(concat!(env!("OUT_DIR"), "/table.rs"));
 
+use crate::field::Field;
+
 pub const FIELD_SIZE: usize = 256;
 
 pub const GENERATING_POLYNOMIAL: usize = 29;
 
 pub const EXP_TABLE_SIZE: usize = FIELD_SIZE * 2 - 2;
 
+
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub struct GF8Field;
+
+impl Field for GF8Field {
+    const ORDER: usize = 256;
+    type Elem = u8;
+
+    fn add(a: u8, b: u8) -> u8 {
+        gal_add(a, b)
+    }
+
+    fn mul(a: u8, b: u8) -> u8 {
+        gal_mul(a, b)
+    }
+
+    fn div(a: u8, b: u8) -> u8 {
+        gal_div(a, b)
+    }
+
+    fn exp(elem: u8, n: usize) -> u8 {
+        gal_exp(elem, n)
+    }
+
+    fn zero() -> u8 {
+        0
+    }
+
+    fn one() -> u8 {
+        1
+    }
+
+    fn nth_internal(n: usize) -> u8 {
+        n as u8
+    }
+
+    fn mul_slice(c: u8, input: &[u8], out: &mut [u8]) {
+        gal_mul_slice(c, input, out)
+    }
+
+    fn mul_slice_add(c: u8, input: &[u8], out: &mut [u8]) {
+        gal_mul_slice_xor(c, input, out)
+    }
+}
+
 macro_rules! return_if_empty {
-    (
-        $len:expr
-    ) => {
+    ($len:expr) => {
         if $len == 0 {
             return;
         }
     };
 }
 
-pub fn gal_add(a: u8, b: u8) -> u8 {
+fn gal_add(a: u8, b: u8) -> u8 {
     a ^ b
 }
 
-pub fn gal_sub(a: u8, b: u8) -> u8 {
+fn gal_sub(a: u8, b: u8) -> u8 {
     a ^ b
 }
 
-pub fn gal_mul(a: u8, b: u8) -> u8 {
+fn gal_mul(a: u8, b: u8) -> u8 {
     MUL_TABLE[a as usize][b as usize]
 }
 
 
-pub fn gal_div(a: u8, b: u8) -> u8 {
+fn gal_div(a: u8, b: u8) -> u8 {
     if a == 0 {
         return 0;
     }
@@ -51,7 +96,7 @@ pub fn gal_div(a: u8, b: u8) -> u8 {
     return EXP_TABLE[log_result as usize];
 }
 
-pub fn gal_exp(a: u8, n: usize) -> u8 {
+fn gal_exp(a: u8, n: usize) -> u8 {
     if n == 0 {
         1
     } else if a == 0 {
@@ -66,7 +111,7 @@ pub fn gal_exp(a: u8, n: usize) -> u8 {
     }
 }
 
-pub fn gal_mul_slice(c: u8, input: &[u8], out: &mut [u8]) {
+fn gal_mul_slice(c: u8, input: &[u8], out: &mut [u8]) {
     assert_eq!(input.len(), out.len());
 
     let len = input.len();
@@ -79,7 +124,7 @@ pub fn gal_mul_slice(c: u8, input: &[u8], out: &mut [u8]) {
     }
 }
 
-pub fn gal_mul_slice_xor(c: u8, input: &[u8], out: &mut [u8]) {
+fn gal_mul_slice_xor(c: u8, input: &[u8], out: &mut [u8]) {
     assert_eq!(input.len(), out.len());
 
     let len = input.len();
@@ -92,7 +137,7 @@ pub fn gal_mul_slice_xor(c: u8, input: &[u8], out: &mut [u8]) {
     }
 }
 
-pub fn slice_xor(input: &[u8], out: &mut [u8]) {
+fn slice_xor(input: &[u8], out: &mut [u8]) {
     assert_eq!(input.len(), out.len());
 
     let len = input.len();
