@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use crate::matrix::Matrix;
 use crate::field::Field;
+use crate::matrix::Matrix;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum Error {
@@ -152,12 +152,12 @@ impl<F: Field> InversionNode<F> {
 
 #[cfg(test)]
 mod tests {
-    use rand;
     use std::sync::Arc;
 
     use crate::galois;
     use crate::inversion_tree::*;
     use crate::matrix::Matrix;
+    use crate::matrix::tests as Matrix_test;
 
     macro_rules! matrix {
         (
@@ -227,12 +227,14 @@ mod tests {
             .unwrap();
     }
 
+    
+
     #[test]
     fn test_double_insert_inverted_matrix() {
         let tree: InversionTree<galois::GF8Field> = InversionTree::new(3, 2);
 
-        let matrix1 = Matrix::make_random(3);
-        let matrix2 = Matrix::make_random(3);
+        let matrix1 : Matrix<galois::GF8Field> = Matrix_test::make_random(3);
+        let matrix2 : Matrix<galois::GF8Field> = Matrix_test::make_random(3);
 
         let matrix_copy1 = matrix1.clone();
         let matrix_copy2 = matrix2.clone();
@@ -293,17 +295,5 @@ mod tests {
             .unwrap();
         let result = tree.get_inverted_matrix(&[0, 3, 4, 11]).unwrap();
         assert_eq!(matrix3_copy, *result);
-    }
-
-    fn make_random_invalid_indices(data_shards: usize, parity_shards: usize) -> Vec<usize> {
-        let mut invalid_count = 0;
-        let mut res = Vec::new();
-        for i in 0..data_shards + parity_shards {
-            if rand::random::<bool>() && invalid_count < parity_shards {
-                res.push(i);
-                invalid_count += 1;
-            }
-        }
-        res
     }
 }

@@ -1,5 +1,5 @@
-use std::iter::{self, FromIterator};
 use crate::errors::*;
+use std::iter::{self, FromIterator};
 
 /// A finite field to perform encoding over.
 pub trait Field: Sized {
@@ -66,9 +66,6 @@ pub trait Field: Sized {
         }
     }
 }
-
-
-
 
 /// Something which might hold a shard.
 ///

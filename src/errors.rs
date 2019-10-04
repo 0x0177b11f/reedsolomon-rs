@@ -50,39 +50,9 @@ impl std::error::Error for Error {
     }
 }
 
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub enum SBSError {
-    TooManyCalls,
-    LeftoverShards,
-    RSError(Error),
-}
-
-impl SBSError {
-    fn to_string(&self) -> &str {
-        match *self {
-            SBSError::TooManyCalls => "Too many calls",
-            SBSError::LeftoverShards => "Leftover shards",
-            SBSError::RSError(ref e) => e.to_string(),
-        }
-    }
-}
-
-impl std::fmt::Display for SBSError {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), std::fmt::Error> {
-        write!(f, "{}", self.to_string())
-    }
-}
-
-impl std::error::Error for SBSError {
-    fn description(&self) -> &str {
-        self.to_string()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::errors::Error;
-    use crate::errors::SBSError;
 
     #[test]
     fn test_error_to_string_is_okay() {
@@ -138,18 +108,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sbserror_to_string_is_okay() {
-        assert_eq!(SBSError::TooManyCalls.to_string(), "Too many calls");
-        assert_eq!(SBSError::LeftoverShards.to_string(), "Leftover shards");
-    }
-
-    #[test]
     fn test_error_display_does_not_panic() {
         println!("{}", Error::TooFewShards);
-    }
-
-    #[test]
-    fn test_sbserror_display_does_not_panic() {
-        println!("{}", SBSError::TooManyCalls);
     }
 }

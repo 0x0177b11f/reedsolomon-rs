@@ -1,16 +1,16 @@
+#![allow(dead_code)]
+
+use crate::errors::Error;
 use crate::field::{Field, ReconstructShard};
 use crate::galois::GF8Field;
-use crate::matrix::Matrix;
 use crate::inversion_tree::InversionTree;
-use crate::errors::Error;
+use crate::matrix::Matrix;
 
 use smallvec::SmallVec;
 use std::sync::Arc;
 
-
-
 #[derive(Debug)]
-struct ReedSolomonImpl<F: Field> {
+pub struct ReedSolomonImpl<F: Field> {
     data_shard_count: usize,
     parity_shard_count: usize,
     total_shard_count: usize,
@@ -597,13 +597,10 @@ impl<F: Field> ReedSolomonImpl<F> {
     }
 }
 
-
 #[derive(PartialEq, Debug)]
 pub struct ShardByShard<'a, F: 'a + Field> {
     codec: &'a ReedSolomonImpl<F>,
     cur_input: usize,
 }
 
-
 pub type ReedSolomon = ReedSolomonImpl<GF8Field>;
-

@@ -1,16 +1,7 @@
-#![allow(dead_code)]
-
 // Implementation of GF(2^8): the finite field with 2^8 elements.
 include!(concat!(env!("OUT_DIR"), "/table.rs"));
 
 use crate::field::Field;
-
-pub const FIELD_SIZE: usize = 256;
-
-pub const GENERATING_POLYNOMIAL: usize = 29;
-
-pub const EXP_TABLE_SIZE: usize = FIELD_SIZE * 2 - 2;
-
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub struct GF8Field;
@@ -65,10 +56,6 @@ macro_rules! return_if_empty {
 }
 
 fn gal_add(a: u8, b: u8) -> u8 {
-    a ^ b
-}
-
-fn gal_sub(a: u8, b: u8) -> u8 {
     a ^ b
 }
 
@@ -137,22 +124,10 @@ fn gal_mul_slice_xor(c: u8, input: &[u8], out: &mut [u8]) {
     }
 }
 
-fn slice_xor(input: &[u8], out: &mut [u8]) {
-    assert_eq!(input.len(), out.len());
-
-    let len = input.len();
-    return_if_empty!(len);
-
-    for n in 0..len {
-        out[n] ^= input[n];
-    }
-}
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
-    use crate::tests::fill_random;
 
     #[test]
     fn test_associativity() {
@@ -318,33 +293,6 @@ mod tests {
         assert_eq!(gal_exp(2, 2), 4);
         assert_eq!(gal_exp(5, 20), 235);
         assert_eq!(gal_exp(13, 7), 43);
-    }
-
-    #[test]
-    fn test_slice_add() {
-        let length_list = [16, 32, 34];
-        for len in length_list.into_iter() {
-            let mut input = vec![0; *len];
-            fill_random(&mut input);
-            let mut output = vec![0; *len];
-            fill_random(&mut output);
-            let mut expect = vec![0; *len];
-            for i in 0..expect.len() {
-                expect[i] = input[i] ^ output[i];
-            }
-            slice_xor(&input, &mut output);
-            for i in 0..expect.len() {
-                assert_eq!(expect[i], output[i]);
-            }
-            fill_random(&mut output);
-            for i in 0..expect.len() {
-                expect[i] = input[i] ^ output[i];
-            }
-            slice_xor(&input, &mut output);
-            for i in 0..expect.len() {
-                assert_eq!(expect[i], output[i]);
-            }
-        }
     }
 
     #[test]
