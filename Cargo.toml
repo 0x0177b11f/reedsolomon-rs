@@ -1,0 +1,9 @@
+[package]
+name = "reedsolomon-rs"
+version = "0.1.0"
+authors = ["tiansheng li <2305166+0x0177b11f@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
