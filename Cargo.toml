@@ -12,4 +12,4 @@ license = "MIT"
 smallvec = "0.6"
 
 [dev-dependencies]
-rand = "0.7.2"
+rand = "0.7"

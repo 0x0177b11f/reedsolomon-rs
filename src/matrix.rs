@@ -10,7 +10,7 @@ pub enum Error {
 
 macro_rules! acc {
     ($m:ident, $r:expr, $c:expr) => {
-        $m.data[$r * $m.col_size + $c]
+        $m.data[$r * $m.m_col_size + $c]
     };
 }
 
@@ -26,8 +26,8 @@ fn flatten<T>(m: Vec<Vec<T>>) -> Vec<T> {
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct Matrix<F: Field> {
-    row_size: usize,
-    col_size: usize,
+    m_row_size: usize,
+    m_col_size: usize,
     data: SmallVec<[F::Elem; 1024]>, // store in flattened structure
                                      // the smallvec can hold a matrix of size up to 32x32 in stack
 }
@@ -48,8 +48,8 @@ impl<F: Field> Matrix<F> {
         let data = SmallVec::from_vec(vec![F::zero(); rows * cols]);
 
         Matrix {
-            row_size: rows,
-            col_size: cols,
+            m_row_size: rows,
+            m_col_size: cols,
             data,
         }
     }
@@ -68,8 +68,8 @@ impl<F: Field> Matrix<F> {
         let data = SmallVec::from_vec(flatten(init_data));
 
         Matrix {
-            row_size: rows,
-            col_size: cols,
+            m_row_size: rows,
+            m_col_size: cols,
             data,
         }
     }
@@ -83,11 +83,11 @@ impl<F: Field> Matrix<F> {
     }
 
     pub fn col_size(&self) -> usize {
-        self.col_size
+        self.m_col_size
     }
 
     pub fn row_size(&self) -> usize {
-        self.row_size
+        self.m_row_size
     }
 
     pub fn get(&self, r: usize, c: usize) -> F::Elem {
@@ -235,8 +235,8 @@ impl<F: Field> Matrix<F> {
             panic!("Trying to invert a non-square matrix")
         }
 
-        let row_size = self.row_size;
-        let col_size = self.col_size;
+        let row_size = self.row_size();
+        let col_size = self.col_size();
 
         let mut work = self.augment(&Self::identity(row_size));
         work.gaussian_elim()?;
@@ -266,7 +266,7 @@ impl<F: Field> fmt::Display for Matrix<F> {
         for i in 0..self.row_size() {
             fmt.write_fmt(format_args!(
                 " {:?}\n",
-                &self.data[(i * self.col_size)..(i * self.col_size() + self.col_size)]
+                &self.data[(i * self.col_size())..(i * self.col_size() + self.col_size())]
             ))?;
         }
         fmt.write_str("]\n")?;
