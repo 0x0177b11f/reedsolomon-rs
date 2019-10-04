@@ -1,9 +1,13 @@
-use crate::error::*;
 use smallvec::SmallVec;
-
 use std::fmt;
 
 use crate::field::Field;
+
+#[derive(Debug)]
+pub enum Error {
+    SingularMatrix,
+}
+
 
 macro_rules! acc {
     ($m:ident, $r:expr, $c:expr) => {
@@ -183,7 +187,7 @@ impl<F: Field> Matrix<F> {
         self.row_count == self.col_count
     }
 
-    pub fn gaussian_elim(&mut self) -> Result<()> {
+    pub fn gaussian_elim(&mut self) -> Result<(), Error> {
         for r in 0..self.row_count {
             if acc!(self, r, r) == F::zero() {
                 for r_below in r + 1..self.row_count {
@@ -195,7 +199,7 @@ impl<F: Field> Matrix<F> {
             }
             // If we couldn't find one, the matrix is singular.
             if acc!(self, r, r) == F::zero() {
-                return Err(ErrorKind::SingularMatrix.into());
+                return Err(Error::SingularMatrix);
             }
             // Scale to 1.
             if acc!(self, r, r) != F::one() {
@@ -237,7 +241,7 @@ impl<F: Field> Matrix<F> {
         Ok(())
     }
 
-    pub fn invert(&self) -> Result<Matrix<F>> {
+    pub fn invert(&self) -> Result<Matrix<F>, Error> {
         if !self.is_square() {
             panic!("Trying to invert a non-square matrix")
         }

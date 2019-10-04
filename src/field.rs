@@ -1,5 +1,5 @@
-use crate::galois::*;
-
+use std::iter::{self, FromIterator};
+use crate::errors::*;
 
 /// A finite field to perform encoding over.
 pub trait Field: Sized {
@@ -68,3 +68,85 @@ pub trait Field: Sized {
 }
 
 
+
+
+/// Something which might hold a shard.
+///
+/// This trait is used in reconstruction, where some of the shards
+/// may be unknown.
+pub trait ReconstructShard<F: Field> {
+    /// The size of the shard data; `None` if empty.
+    fn len(&self) -> Option<usize>;
+
+    /// Get a mutable reference to the shard data, returning `None` if uninitialized.
+    fn get(&mut self) -> Option<&mut [F::Elem]>;
+
+    /// Get a mutable reference to the shard data, initializing it to the
+    /// given length if it was `None`. Returns an error if initialization fails.
+    fn get_or_initialize(
+        &mut self,
+        len: usize,
+    ) -> Result<&mut [F::Elem], Result<&mut [F::Elem], Error>>;
+}
+
+impl<F: Field, T: AsRef<[F::Elem]> + AsMut<[F::Elem]> + FromIterator<F::Elem>> ReconstructShard<F>
+    for Option<T>
+{
+    fn len(&self) -> Option<usize> {
+        self.as_ref().map(|x| x.as_ref().len())
+    }
+
+    fn get(&mut self) -> Option<&mut [F::Elem]> {
+        self.as_mut().map(|x| x.as_mut())
+    }
+
+    fn get_or_initialize(
+        &mut self,
+        len: usize,
+    ) -> Result<&mut [F::Elem], Result<&mut [F::Elem], Error>> {
+        let is_some = self.is_some();
+        let x = self
+            .get_or_insert_with(|| iter::repeat(F::zero()).take(len).collect())
+            .as_mut();
+
+        if is_some {
+            Ok(x)
+        } else {
+            Err(Ok(x))
+        }
+    }
+}
+
+impl<F: Field, T: AsRef<[F::Elem]> + AsMut<[F::Elem]>> ReconstructShard<F> for (T, bool) {
+    fn len(&self) -> Option<usize> {
+        if !self.1 {
+            None
+        } else {
+            Some(self.0.as_ref().len())
+        }
+    }
+
+    fn get(&mut self) -> Option<&mut [F::Elem]> {
+        if !self.1 {
+            None
+        } else {
+            Some(self.0.as_mut())
+        }
+    }
+
+    fn get_or_initialize(
+        &mut self,
+        len: usize,
+    ) -> Result<&mut [F::Elem], Result<&mut [F::Elem], Error>> {
+        let x = self.0.as_mut();
+        if x.len() == len {
+            if self.1 {
+                Ok(x)
+            } else {
+                Err(Ok(x))
+            }
+        } else {
+            Err(Err(Error::IncorrectShardSize))
+        }
+    }
+}
